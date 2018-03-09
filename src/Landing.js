@@ -3,6 +3,7 @@ import TextField from 'material-ui/TextField';
 import {cyan300} from 'material-ui/styles/colors';
 import MultiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import FlatButton from 'material-ui/FlatButton';
+import RaisedButton from 'material-ui/RaisedButton';
 import axios from 'axios';
 import {Launcher} from 'react-chat-window';
 import {geolocated} from 'react-geolocated';
@@ -11,6 +12,7 @@ import io from 'socket.io-client'
 
 import {DirectionsMap} from './DirectionsMap';
 import Nav from './Nav';
+import RouteCard from './RouteCard';
 
 
 
@@ -43,7 +45,8 @@ class Landing extends Component{
             messaging: false,
             messageList: [],
             endpoint: 'http://localhost:5000',
-            dataEntered: false        
+            dataEntered: false,
+            routeDescription: ''    
         }
 
         this.buttonHandler = this.buttonHandler.bind(this)
@@ -51,7 +54,7 @@ class Landing extends Component{
         this.handleLastName = this.handleLastName.bind(this)
         this.handlePhone = this.handlePhone.bind(this)
         this.handleAuthId = this.handleAuthId.bind(this)
-        
+        this.handleCompleteRoute = this.handleCompleteRoute.bind(this)
        
     }
 
@@ -86,18 +89,17 @@ class Landing extends Component{
         socket.on('RoutesUpdate',()=>{
             console.log('RoutesUpdateReceived')
             axios.get(`/api/routes2/${this.state.managerauthid}/${this.state.phone}`).then(response=>{
-                console.log(response,this.state)
-                if(response.data[0]){
-                    console.log(this)
-                console.log(response)
+                
+                if(response.data[0]){                
                 this.setState({
                  routeMessage: 'You have a new route!',
                  destLat: response.data[0].destlat,
-                 destLon: response.data[0].destlon
+                 destLon: response.data[0].destlon,
+                 routeDescription: response.data[0].description
                 })
                 console.log(this.state)
             }
-            console.log(this.state)
+            
 
              }).catch(err=>console.log(err))
             
@@ -112,8 +114,7 @@ class Landing extends Component{
                 longitude: String(nextProps.coords.longitude)
             })
         }
-        console.log(String(nextProps.coords.latitude))
-        console.log(String(nextProps.coords.longitude))
+        
     }
 
     _onMessageWasSent(message) {
@@ -129,11 +130,11 @@ class Landing extends Component{
       }
       
       axios.post('/api/message/employee',obj).then(response=>{
-          console.log(response)
+        const {endpoint} = this.state;
+        const socket = io(endpoint);
+        socket.emit('MessagesChange');
       }).catch(err=>console.log(err))
-      const {endpoint} = this.state;
-      const socket = io(endpoint);
-      socket.emit('MessagesChange');
+      // moved socket emit inside
     }
    
     _sendMessage(text) {
@@ -173,7 +174,7 @@ class Landing extends Component{
             this.setState({
                 messageList: actual
             })
-            console.log('got the messages')
+           
         }).catch(err=>console.log(err))
 
     let obj = {
@@ -187,25 +188,23 @@ class Landing extends Component{
         // Post employee
 
         axios.post('/api/employee',obj).then(response=>{
-            console.log(response)
+           
         })
 
         // go get route
 
         axios.get(`/api/routes2/${this.state.managerauthid}/${this.state.phone}`).then(response=>{
-            console.log(response,this.state)
+            
             if(response.data[0]){
-                console.log(this)
-            console.log(response)
+            
             this.setState({
              routeMessage: 'You have a new route!',
              destLat: response.data[0].destlat,
-             destLon: response.data[0].destlon
+             destLon: response.data[0].destlon,
+             routeDescription: response.data[0].description
             })
-            console.log(this.state)
+            
         }
-        console.log(this.state)
-
          }).catch(err=>console.log(err))
         
         this.setState({
@@ -241,6 +240,24 @@ class Landing extends Component{
         })
     }
 
+    handleCompleteRoute(){
+        const body = {
+            phone: this.state.phone,
+            destlat: this.state.destLat,
+            destlon: this.state.destLon
+        }
+        console.log('button handler fired')
+        axios.put(`/api/routes/${this.state.managerauthid}`,body).then(response=>{
+            const {endpoint} = this.state;
+            const socket = io(endpoint);
+            socket.emit('RoutesUpdate');
+        }).catch((err)=>console.log(err));
+        this.setState({
+            destLat: '',
+            routeMessage: 'All caught up! You will be notified if this changes.'
+        })
+    }
+
     
 
     render(){
@@ -254,15 +271,34 @@ class Landing extends Component{
             {(this.state.messaging) ?  
             <div>
                 <h1>{this.state.routeMessage}</h1>
+                <h4>{this.state.routeMessage == 'You have a new route!' && 'Please refer to map for directions'}</h4>
              {(this.state.destLat.length>0) ?
+             <div>
             <DirectionsMap 
             key={this.state.destLat}
             startingLat={parseFloat(this.state.latitude)}
             startingLon={parseFloat(this.state.longitude)}
             destLat={parseFloat(this.state.destLat)}
             destLon={parseFloat(this.state.destLon)}
-            />
-            : false
+            /><br /><br />
+            <div>
+                <h1>Current Route</h1>
+                <div style={{display: 'flex', justifyContent: 'space-around', alignItems: 'center'}}>
+                    <div >
+                    <h3>Desctiption:</h3>
+                    <h5>{this.state.routeDescription}</h5>
+                    </div>
+                    <button className='completeButton'
+                    onClick={()=>this.handleCompleteRoute()}
+                    
+                    >
+                        Mark Complete
+                    </button>
+                </div><br/><br/>
+            </div>
+            </div>
+            : 
+            false
              }
             <Launcher
             agentProfile={{
@@ -274,39 +310,44 @@ class Landing extends Component{
             showEmoji={false}
           />
           
-          <p> Displaying options for current route such as marking as complete(status = complete)</p>
+          
 
             </div>
             :
             
-            <div style={{ marginTop: 70}}>
-            <TextField 
-            hintText="First Name"
-            hintStyle={styles.errorStyle}
-            onChange={(e)=>this.handleFirstName(e)}
-            /><br/>
-            <TextField 
-            hintText="Last Name"
-            hintStyle={styles.errorStyle}
-            onChange={(e)=>this.handleLastName(e)}
-            /><br/>
-            <TextField 
-            hintText="Phone Number (1234567890)"
-            hintStyle={styles.errorStyle}
-            onChange={(e)=>this.handlePhone(e)}
-            /><br/>
-            <TextField 
-            floatingLabelText="Group Code"
-            floatingLabelStyle={styles.floatingLabelStyle}
-            floatingLabelFocusStyle={styles.floatingLabelFocusStyle}
-            errorText="Your manager should provide this."
-            errorStyle={styles.errorStyle}
-            onChange={(e)=>this.handleAuthId(e)}
-            /><br/>
-            <FlatButton style={{marginBottom: 70}} onClick={()=>{this.buttonHandler()}} label="Submit" fullWidth={true} />
-            <br />
-            <h2>Welcome to the TRAX interface for employees</h2>
-            <p>Connect with your manager</p>
+            <div className="landingWrapper">
+                    <div>
+                        <h2 className="introMessage">Welcome to the TRAX interface for employees.</h2>
+                        <p>We provide creative solutions to manage communitation of logistics between you and your employer.</p>
+                    </div>
+                    <div className="landingForm">
+                    <h4>Connect with your manager</h4>
+                    <TextField 
+                    hintText="First Name"
+                    hintStyle={styles.errorStyle}
+                    onChange={(e)=>this.handleFirstName(e)}
+                    /><br/>
+                    <TextField 
+                    hintText="Last Name"
+                    hintStyle={styles.errorStyle}
+                    onChange={(e)=>this.handleLastName(e)}
+                    /><br/>
+                    <TextField 
+                    hintText="Phone Number (1234567890)"
+                    hintStyle={styles.errorStyle}
+                    onChange={(e)=>this.handlePhone(e)}
+                    /><br/>
+                    <TextField 
+                    floatingLabelText="Group Code"
+                    floatingLabelStyle={styles.floatingLabelStyle}
+                    floatingLabelFocusStyle={styles.floatingLabelFocusStyle}
+                    errorText="Your manager should provide this."
+                    errorStyle={styles.errorStyle}
+                    onChange={(e)=>this.handleAuthId(e)}
+                    /><br/>
+                    <FlatButton style={{marginBottom: 70}} onClick={()=>{this.buttonHandler()}} label="Submit" fullWidth={true} />
+                    <br />
+                </div>
             </div>
             }
             </div>

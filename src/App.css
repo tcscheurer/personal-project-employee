@@ -26,3 +26,57 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+body{
+  background-color: rgb(242, 242, 242) !important;
+}
+
+a{
+  text-decoration: none;
+}
+
+.logoutButton{
+  margin-top: 0px;
+  float: right;
+  margin-right: 30px;
+  padding-top: 20px;
+  color: white;
+}
+
+.logoutButton:visited{
+  color: white;
+}
+
+.landingWrapper{
+background-image: url("imgs/black-and-white-city-houses-skyline (1).jpg");
+margin-top: 0px;
+width: 100%;
+height: 900px;
+display: flex;
+justify-content: space-around;
+align-items: center;
+}
+
+.introMessage{
+  
+}
+
+.landingForm{
+height: 350px;
+width: 315px;
+background: rgba(248, 249, 250, 0.8);
+border-radius: 50px;
+}
+
+.completeButton{
+  background: rgba(209, 46, 37,0.9);
+  height: 60px;
+  width: 150px;
+  color: white;
+  border-radius: 10px;
+  border: 1px solid white;
+}
+
+.completeButton:hover{
+  cursor: pointer;
+}

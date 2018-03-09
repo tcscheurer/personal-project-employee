@@ -12,8 +12,8 @@ export const DirectionsMap = compose(
   withProps({
     googleMapURL: "https://maps.googleapis.com/maps/api/js?key=AIzaSyAxm62zSoAzobkGBoVyOjKFgMAJL5z6iXM&v=3.exp&libraries=geometry,drawing,places",
     loadingElement: <div style={{ height: `100%` }} />,
-    containerElement: <div style={{ height: `400px` }} />,
-    mapElement: <div style={{ height: `100%` }} />,
+    containerElement: <div style={{ height: `400px`,display: 'flex', justifyContent: 'center' }} />,
+    mapElement: <div style={{ height: `100%`, width: '60%' ,border: '1px solid #b0b3b7' }} />,
   }),
   withScriptjs,
   withGoogleMap,
@@ -41,11 +41,11 @@ export const DirectionsMap = compose(
     },
 
     componentWillReceiveProps(nextProps){
-      console.log('CWRP Fired')
+      
       if(nextProps != this.props){
       const google = window.google;
       const DirectionsService = new google.maps.DirectionsService();
-        console.log('Inside cdm dm',nextProps.destLat)
+        
       DirectionsService.route({
         origin: new google.maps.LatLng(nextProps.startingLat, nextProps.startingLon),
         destination: new google.maps.LatLng(nextProps.destLat, nextProps.destLon),

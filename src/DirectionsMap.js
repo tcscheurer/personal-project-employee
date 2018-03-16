@@ -13,7 +13,7 @@ export const DirectionsMap = compose(
     googleMapURL: "https://maps.googleapis.com/maps/api/js?key=AIzaSyAxm62zSoAzobkGBoVyOjKFgMAJL5z6iXM&v=3.exp&libraries=geometry,drawing,places",
     loadingElement: <div style={{ height: `100%` }} />,
     containerElement: <div style={{ height: `400px`,display: 'flex', justifyContent: 'center' }} />,
-    mapElement: <div style={{ height: `100%`, width: '60%' ,border: '1px solid #b0b3b7' }} />,
+    mapElement: <div style={{ height: `100%`, width: '90%' ,border: '1px solid #b0b3b7' }} />,
   }),
   withScriptjs,
   withGoogleMap,

@@ -7,7 +7,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import axios from 'axios';
 import {Launcher} from 'react-chat-window';
 import {geolocated} from 'react-geolocated';
-
+import './App.css';
 import io from 'socket.io-client'
 
 import {DirectionsMap} from './DirectionsMap';
@@ -269,7 +269,7 @@ class Landing extends Component{
             <div>
             <Nav dataEntered={this.state.dataEntered} />
             {(this.state.messaging) ?  
-            <div>
+            <div className='dynamic-changer-wrap' style={(this.state.routeMessage !== 'You have a new route!')? {marginTop: 300}:{}}>
                 <h1>{this.state.routeMessage}</h1>
                 <h4>{this.state.routeMessage == 'You have a new route!' && 'Please refer to map for directions'}</h4>
              {(this.state.destLat.length>0) ?
@@ -281,9 +281,9 @@ class Landing extends Component{
             destLat={parseFloat(this.state.destLat)}
             destLon={parseFloat(this.state.destLon)}
             /><br /><br />
-            <div>
+            <div className='current-route-display'>
                 <h1>Current Route</h1>
-                <div style={{display: 'flex', justifyContent: 'space-around', alignItems: 'center'}}>
+                <div style={{display: 'flex', justifyContent: 'space-around', alignItems: 'center', flexWrap: 'wrap'}}>
                     <div >
                     <h3>Desctiption:</h3>
                     <h5>{this.state.routeDescription}</h5>
@@ -316,7 +316,7 @@ class Landing extends Component{
             :
             
             <div className="landingWrapper">
-                    <div>
+                    <div className='display-info-wrapper'>
                         <h2 className="introMessage">Welcome to the TRAX interface for employees.</h2>
                         <p>We provide creative solutions to manage communitation of logistics between you and your employer.</p>
                     </div>
